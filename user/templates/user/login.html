@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block content %}
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .login-container {
+            max-width: 400px;
+            margin: 50px auto;
+            height: 550px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            margin-top: 20px;
+        }
+        form {
+            text-align: center;
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            height: 50px;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button[type="submit"] {
+            background-color: #000;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            width: 100%;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button[type="submit"]:hover {
+            background-color: lightgray;
+        }
+        p {
+            text-align: center;
+            margin-top: 20px;
+        }
+        a {
+            text-decoration: none;
+            color: #007bff;
+            transition: color 0.3s;
+        }
+        a:hover {
+            color: #0056b3;
+        }
+        .error-message {
+            color: red;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div>
+            <h2>로그인</h2>
+        </div>
+        <form method="post">
+            <div style="margin-top: 20%;">
+            {% if error %}
+            <p style="color: red;" class="text-center">{{ error }}</p>
+            {% endif %}
+            {% csrf_token %}
+            {{ form.as_p }}
+                <button type="submit" style="margin-top: 50px;">로그인</button>
+            </div>
+            <p>계정이 없으신가요? <a href="{% url 'user:signup' %}">회원가입</a></p>
+        </form>
+    </div>
+</body>
+</html>
+{% endblock %}

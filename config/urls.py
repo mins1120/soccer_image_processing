@@ -22,5 +22,7 @@ from . import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.index, name='index'),
+    path('user/', include('user.urls')),
+    path('', views.home, name='home'),
+    path('download/<int:video_id>/', views.download_video, name='download_video'),
 ]

@@ -12,13 +12,122 @@
     </div>
 </section>
 
-<div class="row" style="align-items: center; justify-content: center; justify-items: center; display: flex; width: 200px; margin-left: 750px; margin-top: 100px;">
-    <button type="submit" class="btn w-100 mb-4" style="background-color: black; color: white;">Upload</button>
+<div class="button-container" style="display: flex; flex-direction: column; align-items: center; height: 100vh; margin-top: 10%;">
+    <div class="row" style="width: 200px; margin-bottom: 20px;">
+        <form id="upload-form" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="file" id="video_file" name="video_file" accept="video/*" style="display: none;">
+        </form>
+        <button id="upload-button" class="btn w-100" style="background-color: black; color: white;">Upload Video</button>
+    </div>
+    <div class="row" style="width: 200px;">
+        <button id="download-button" class="btn w-100" style="background-color: black; color: white;">Download Video</button>
+    </div>
 </div>
-<div class="row" style="align-items: center; justify-content: center; justify-items: center; display: flex; width: 200px; margin-left: 750px; margin-top: 100px;">
-    <button type="submit" class="btn w-100 mb-4" style="background-color: black; color: white;">Download</button>
+
+<!-- 다운로드 모달 -->
+<div id="downloadModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <span class="close" id="closeModal">&times;</span>
+        <h2>비디오를 골라주세요</h2>
+        <div class="video-list">
+            {% for video in videos %}
+                <div class="video-item" data-video-id="{{ video.id }}">
+                    <input type="radio" name="selected_video" value="{{ video.id }}" id="video_{{ video.id }}" style="display: none;">
+                    <label for="video_{{ video.id }}">
+                        <div class="video-details">
+                            <div class="video-thumbnail">
+                                🎥
+                            </div>
+                            <div class="video-info">
+                                <strong>{{ video.video_file.name }}</strong>
+                                <p>Uploaded at: {{ video.uploaded_at|date:"Y-m-d H:i" }}</p>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            {% endfor %}
+        </div>
+        <button id="confirm-download" class="btn w-100" style="background-color: #007bff; color: white;">Download Video</button>
+    </div>
 </div>
-</div>
+<script>
+    // 업로드 버튼 클릭 시 파일 선택 창을 엽니다.
+    document.getElementById('upload-button').addEventListener('click', function() {
+        document.getElementById('video_file').click();
+    });
+
+    // 파일 선택 후 AJAX로 업로드 요청을 보냅니다.
+    document.getElementById('video_file').addEventListener('change', function() {
+        const fileInput = this;
+        
+        if (fileInput.files.length === 0) {
+            alert("No file selected. Please select a file to upload.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('video_file', fileInput.files[0]);
+
+        // CSRF 토큰 설정
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        // AJAX 요청 전송
+        fetch('', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken,  // CSRF 토큰 추가
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                alert('File uploaded successfully!');
+            } else {
+                alert('File upload failed. Please try again.');
+            }
+            fileInput.value = '';  // 선택한 파일 입력 초기화
+        })
+        .catch(error => console.error('Error:', error));
+    });
+    // 다운로드 버튼 클릭 시 모달 창을 엽니다.
+    document.getElementById('download-button').addEventListener('click', function() {
+        document.getElementById('downloadModal').style.display = 'block';
+    });
+
+    // 모달 닫기 버튼
+    document.getElementById('closeModal').addEventListener('click', function() {
+        document.getElementById('downloadModal').style.display = 'none';
+    });
+
+    // 비디오 항목 클릭 시 해당 항목을 선택
+    document.querySelectorAll('.video-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const videoId = this.getAttribute('data-video-id');
+            document.getElementById('video_' + videoId).checked = true;
+
+            // 선택된 항목 스타일 변경
+            document.querySelectorAll('.video-item').forEach(el => el.classList.remove('selected'));
+            this.classList.add('selected');
+        });
+    });
+
+    // 다운로드 확인 버튼 클릭 시 선택된 비디오 다운로드
+    document.getElementById('confirm-download').addEventListener('click', function() {
+        const selectedVideo = document.querySelector('input[name="selected_video"]:checked');
+        if (selectedVideo) {
+            const videoId = selectedVideo.value;
+            window.location.href = `/download/${videoId}/`;
+        } else {
+            alert("Please select a video to download.");
+        }
+    });
+</script>
 {% endblock %}
-
-

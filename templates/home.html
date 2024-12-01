@@ -16,7 +16,7 @@
     <div class="row" style="width: 200px; margin-bottom: 20px;">
         <form id="upload-form" method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            <input type="file" id="video_file" name="video_file" accept="video/*" style="display: none;">
+            <input type="file" id="upload_video_file" name="upload_video_file" accept="video/*" style="display: none;">
         </form>
         <button id="upload-button" class="btn w-100" style="background-color: black; color: white;">Upload Video</button>
     </div>
@@ -33,18 +33,31 @@
         <div class="video-list">
             {% for video in videos %}
                 <div class="video-item" data-video-id="{{ video.id }}">
-                    <input type="radio" name="selected_video" value="{{ video.id }}" id="video_{{ video.id }}" style="display: none;">
-                    <label for="video_{{ video.id }}">
-                        <div class="video-details">
+                    {% if video.download_video_file %}
+                        <input type="radio" name="selected_video" value="{{ video.id }}" id="video_{{ video.id }}" style="display: none;">
+                        <label for="video_{{ video.id }}">
+                            <div class="video-details">
+                                <div class="video-thumbnail">
+                                    🎥
+                                </div>
+                                <div class="video-info">
+                                    <strong>{{ video.upload_video_file.name }}</strong>
+                                    <p>Uploaded at: {{ video.uploaded_at|date:"Y-m-d H:i" }}</p>
+                                </div>
+                            </div>
+                        </label>
+                    {% else %}
+                        <!-- 작업 중인 비디오 -->
+                        <div class="video-details disabled" style="opacity: 0.5; pointer-events: none;">
                             <div class="video-thumbnail">
-                                🎥
+                                🛠️
                             </div>
                             <div class="video-info">
-                                <strong>{{ video.video_file.name }}</strong>
-                                <p>Uploaded at: {{ video.uploaded_at|date:"Y-m-d H:i" }}</p>
+                                <strong>{{ video.upload_video_file.name }}</strong>
+                                <p>Processing...</p>
                             </div>
                         </div>
-                    </label>
+                    {% endif %}
                 </div>
             {% endfor %}
         </div>
@@ -54,11 +67,11 @@
 <script>
     // 업로드 버튼 클릭 시 파일 선택 창을 엽니다.
     document.getElementById('upload-button').addEventListener('click', function() {
-        document.getElementById('video_file').click();
+        document.getElementById('upload_video_file').click();
     });
 
     // 파일 선택 후 AJAX로 업로드 요청을 보냅니다.
-    document.getElementById('video_file').addEventListener('change', function() {
+    document.getElementById('upload_video_file').addEventListener('change', function() {
         const fileInput = this;
         
         if (fileInput.files.length === 0) {
@@ -67,7 +80,7 @@
         }
 
         const formData = new FormData();
-        formData.append('video_file', fileInput.files[0]);
+        formData.append('upload_video_file', fileInput.files[0]);
 
         // CSRF 토큰 설정
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;

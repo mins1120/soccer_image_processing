@@ -68,6 +68,10 @@
 .video-info {
   text-align: left;
 }
+.video-details.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 .banner {
     margin-top: 50px;
